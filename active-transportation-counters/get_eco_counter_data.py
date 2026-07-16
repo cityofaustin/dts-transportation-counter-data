@@ -11,6 +11,7 @@ import uuid
 from utils import get_logger
 
 ECO_VISIO_API_KEY = os.getenv("ECO_VISIO_API_KEY")
+ECO_VISIO_API_BASE_URL = os.getenv("ECO_VISIO_API_BASE_URL")
 
 ECO_COUNTER_OBSERVATIONS_DATASET = os.getenv("ECO_COUNTER_OBSERVATIONS_DATASET")
 ECO_COUNTER_FLOWS_DATASET = os.getenv("ECO_COUNTER_FLOWS_DATASET")
@@ -45,7 +46,7 @@ def to_floating_timestamp(ts: str) -> str:
 
 
 def get_counter_metadata():
-    url = "https://api.eco-counter.us/api/v2/sites"
+    url = f"{ECO_VISIO_API_BASE_URL}/api/v2/sites"
 
     page_size = 100
 
@@ -233,7 +234,7 @@ def main():
         site_id = item["site_id"]
         end_date = start_date  # We are just getting one day worth of count data at a time
 
-        url = "https://api.eco-counter.us/api/v2/history/traffic/raw"
+        url = f"{ECO_VISIO_API_BASE_URL}/api/v2/history/traffic/raw"
 
         params = {
             "siteId": site_id,

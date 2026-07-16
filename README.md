@@ -64,6 +64,7 @@ See also: `env_template`
 | Variable                           | Purpose                                                             |
 |------------------------------------|---------------------------------------------------------------------|
 | `ECO_VISIO_API_KEY`                | API key for Eco-Counter's `api.eco-counter.us` endpoints.           |
+| `ECO_VISIO_API_BASE_URL`           | Base url for Eco-Counter API.                                       |
 | `ECO_COUNTER_OBSERVATIONS_DATASET` | Socrata dataset ID that raw per-timestamp counts are upserted into. |
 | `ECO_COUNTER_FLOWS_DATASET`        | Socrata dataset ID that flow/site metadata is replaced into.        |
 | `SOCRATA_ENDPOINT`                 | Socrata domain (e.g. `data.austintexas.gov`).                       |

@@ -1,7 +1,8 @@
 ## Active Transportation Counters
 
 # EcoVisio API
-ECO_VISIO_API_KEY=<Eco counters/visio API Key>
+ECO_VISIO_API_KEY=<API Key: Eco counters/visio API Key>
+ECO_VISIO_API_BASE_URL=<base URL: Eco counters/visio API Key>
 
 # Socrata
 ECO_COUNTER_OBSERVATIONS_DATASET=u4i6-pw3h
