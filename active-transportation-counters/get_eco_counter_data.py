@@ -5,6 +5,7 @@ import os
 from datetime import timedelta, datetime, timezone
 import requests
 from sodapy import Socrata
+from tqdm import tqdm
 import uuid
 
 from utils import get_logger
@@ -139,6 +140,26 @@ def is_date_in_range(date_str, first_data, last_data):
 
     return first <= date <= last
 
+
+def build_work_items(dates, sites):
+    """
+    Precompute every (date, site) pair that will actually be fetched, so we
+    know the total up front instead of discovering validity inside the loop.
+    """
+    items = []
+    for start_date in dates:
+        for site in sites:
+            # some sites are missing these fields, and they all appear to be decommissioned.
+            if "firstData" in site and "lastData" in site:
+                if is_date_in_range(start_date, site["firstData"], site["lastData"]):
+                    site_id = site["id"]
+                    items.append({
+                        "start_date": start_date,
+                        "site_id": site_id,
+                    })
+    return items
+
+
 def main():
     # Fallback dates if no args are supplied
     today = datetime.today().date()
@@ -166,6 +187,12 @@ def main():
         action="store_true",
         help="Allows for a test dry run where nothing actually gets downloaded or uploaded, but API logins are tested.",
     )
+    parser.add_argument(
+        "-p",
+        "--progress-bar",
+        action="store_true",
+        help="Show a tqdm progress bar instead of logging each site/date upload individually.",
+    )
     args = parser.parse_args()
 
     # Validate date formats
@@ -176,6 +203,7 @@ def main():
         parser.error(f"Invalid date format: {e}")
 
     # Generate a list of dates to download
+    logger.info(f"Start date: {args.start}, End date: {args.end}")
     dates = date_range(start, end)
 
     # Getting metadata from Eco Counters
@@ -193,40 +221,51 @@ def main():
     soda_res = soda_client.replace(ECO_COUNTER_FLOWS_DATASET, flows)
     logger.info(soda_res)
 
-    for start_date in dates:
-        for site in sites:
-            # some sites are missing these fields, and they all appear to be decommissioned.
-            if "firstData" in site and "lastData" in site:
-                # Check if the date is within the range of the site's first and last data
-                if is_date_in_range(start_date, site["firstData"], site["lastData"]):
-                    site_id = site["id"]
-                    end_date = start_date   # We are just getting one day worth of count data at a time
+    todos = build_work_items(dates, sites)
 
-                    url = "https://api.eco-counter.us/api/v2/history/traffic/raw"
+    total_rows_uploaded = 0
 
-                    params = {
-                        "siteId": site_id,
-                        "startDate": start_date,
-                        "endDate": end_date,
-                        "startTime": "00:00",
-                        "endTime": "23:59",
-                        "gapFilling": "false",
-                        "validatedDataOnly": "false",
-                        "rawDataOnly": "true"
-                    }
+    # Logic for what interator to use for a given logging type
+    iterator = tqdm(todos, unit="site-days") if args.progress_bar else todos
 
-                    headers = {
-                        "accept": "application/json",
-                        "X-API-KEY": ECO_VISIO_API_KEY,
-                    }
+    for item in iterator:
+        start_date = item["start_date"]
+        site_id = item["site_id"]
+        end_date = start_date  # We are just getting one day worth of count data at a time
 
-                    response = requests.get(url, params=params, headers=headers)
-                    raw = response.json()
+        url = "https://api.eco-counter.us/api/v2/history/traffic/raw"
 
-                    processed = process_raw_data(raw)
-                    soda_res = soda_client.upsert(ECO_COUNTER_OBSERVATIONS_DATASET, processed)
-                    logger.info(f"successfully uploaded: {start_date} for site {site_id}")
-                    logger.info(soda_res)
+        params = {
+            "siteId": site_id,
+            "startDate": start_date,
+            "endDate": end_date,
+            "startTime": "00:00",
+            "endTime": "23:59",
+            "gapFilling": "false",
+            "validatedDataOnly": "false",
+            "rawDataOnly": "true"
+        }
+
+        headers = {
+            "accept": "application/json",
+            "X-API-KEY": ECO_VISIO_API_KEY,
+        }
+
+        response = requests.get(url, params=params, headers=headers)
+        raw = response.json()
+
+        processed = process_raw_data(raw)
+        soda_res = soda_client.upsert(ECO_COUNTER_OBSERVATIONS_DATASET, processed)
+
+        total_rows_uploaded += len(processed)
+
+        if args.progress_bar:
+            iterator.set_postfix(site=site_id, date=start_date, rows=total_rows_uploaded)
+        else:
+            logger.info(f"successfully uploaded: {start_date} for site {site_id}")
+            logger.info(soda_res)
+
+    logger.info(f"Done. Total rows uploaded across run: {total_rows_uploaded}")
 
 if __name__ == "__main__":
     logger = get_logger(
