@@ -1,0 +1,12 @@
+## Active Transportation Counters
+
+# EcoVisio API
+ECO_VISIO_API_KEY=<Eco counters/visio API Key>
+
+# Socrata
+ECO_COUNTER_OBSERVATIONS_DATASET=u4i6-pw3h
+ECO_COUNTER_FLOWS_DATASET=4mh3-39w2
+SOCRATA_ENDPOINT=datahub.austintexas.gov
+SOCRATA_SECRET_KEY=<apiKeySecret: Socrata Key ID, Secret, and Token>
+SOCRATA_TOKEN=<appToken: Socrata Key ID, Secret, and Token>
+SOCRATA_API_KEY=<apiKeyId: Socrata Key ID, Secret, and Token>
