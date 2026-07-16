@@ -59,6 +59,8 @@ python get_eco_counter_data.py -n
  
 ## Required environment variables
  
+See also: `env_template`
+
 | Variable                           | Purpose                                                             |
 |------------------------------------|---------------------------------------------------------------------|
 | `ECO_VISIO_API_KEY`                | API key for Eco-Counter's `api.eco-counter.us` endpoints.           |
@@ -74,3 +76,50 @@ python get_eco_counter_data.py -n
 - `requests`
 - `sodapy`
 - `tqdm` 
+
+
+# Docker
+
+## Building the image
+
+From the repo root:
+
+```bash
+docker build -t atddocker/dts-transportation-counter-data:local .
+```
+
+## Running the image
+
+### Default script (Eco-Counter)
+
+```bash
+docker run --rm --env-file .env atddocker/dts-transportation-counter-data:local
+```
+
+`CMD` defaults to `active-transportation-counters/get_eco_counter_data.py`, so no arguments are needed to run it as-is.
+
+### Passing arguments to the default script
+
+Anything appended after the image name replaces `CMD` and is passed straight to `python`, so you have to include the script path yourself:
+
+```bash
+docker run --rm --env-file .env atddocker/dts-transportation-counter-data:local \
+  active-transportation-counters/get_eco_counter_data.py -s 2026-06-01 -e 2026-06-30 -p
+```
+
+| Flag                   | Description                                                                    |
+|------------------------|--------------------------------------------------------------------------------|
+| `-s`, `--start`        | Start date (`YYYY-MM-DD`), default 3 days before today                         |
+| `-e`, `--end`          | End date (`YYYY-MM-DD`), default today                                         |
+| `-n`, `--dry-run`      | Test metadata download and Socrata login without fetching/uploading count data |
+| `-p`, `--progress-bar` | Show a `tqdm` progress bar instead of per-item log lines                       |
+
+## Debugging inside the container
+
+Get an interactive shell instead of running any ETL script, by overriding `--entrypoint`:
+
+```bash
+docker run -it --rm --entrypoint /bin/bash --env-file .env atddocker/dts-transportation-counter-data:local
+```
+
+From there you're in `/app` and can inspect files, check `env`, or run a script manually (e.g. `python active-transportation-counters/get_eco_counter_data.py -n`).

@@ -1,12 +1,9 @@
-# syntax=docker/dockerfile:1
-
-FROM python:3.13-slim
-
+FROM --platform=$BUILDPLATFORM python:3.13-slim
 WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-COPY requirements.txt requirements.txt
-RUN pip3 install -r requirements.txt
+COPY active-transportation-counters/ ./active-transportation-counters/
 
-COPY . .
-
-CMD [ "python3", "-m" , "flask", "run", "--host=0.0.0.0"]
+ENTRYPOINT ["python"]
+CMD ["active-transportation-counters/get_eco_counter_data.py"]
