@@ -1,1 +1,7 @@
-*.env
+# Ignoring everything
+*
+
+# Only allow the specific files we need
+!active-transportation-counters/get_eco_counter_data.py
+!active-transportation-counters/utils.py
+!requirements.txt

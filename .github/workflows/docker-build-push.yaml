@@ -25,5 +25,5 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            ${{ secrets.DOCKER_USERNAME }}/atd-trail-counters:production
-            ${{ secrets.DOCKER_USERNAME }}/atd-trail-counters:latest
+            ${{ secrets.DOCKER_USERNAME }}/dts-transportation-counter-data:production
+            ${{ secrets.DOCKER_USERNAME }}/dts-transportation-counter-data:latest
