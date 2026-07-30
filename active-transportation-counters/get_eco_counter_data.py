@@ -226,7 +226,7 @@ def main():
 
     total_rows_uploaded = 0
 
-    # Logic for what interator to use for a given logging type
+    # Logic for what iterator to use for a given logging type
     iterator = tqdm(todos, unit="site-days") if args.progress_bar else todos
 
     for item in iterator:

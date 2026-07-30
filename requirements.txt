@@ -1,3 +1,3 @@
-requests==2.34.*
-sodapy==2.2.*
-tqdm==4.68.*
+requests==2.*
+sodapy==2.*
+tqdm==4.*
