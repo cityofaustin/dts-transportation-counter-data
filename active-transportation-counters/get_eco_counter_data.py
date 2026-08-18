@@ -83,6 +83,18 @@ def process_flows_metadata(sites):
 
     output = []
     for site in sites:
+        # Ignoring temporary and transformed data counters
+        is_temporary = False
+        for tag in site["tags"]:
+            if tag["name"] == "Temporary Counters" or tag["id"] == 7297:
+                is_temporary = True
+                break
+            if tag["name"] == "Transformed Data f(x)" or tag["id"] == 7327:
+                is_temporary = True
+                break
+        if is_temporary:
+            continue
+
         # Adding site_ prefix to clarify these are describing the site
         site_metadata = {}
         for field in included_site_metadata:
@@ -94,7 +106,8 @@ def process_flows_metadata(sites):
         if "lat" in site["location"] and "lon" in site["location"]:
             site_metadata["location"] = f"POINT({site["location"]["lon"]} {site["location"]["lat"]})"
         else:
-            site_metadata["location"] = None
+            # Ignoring sites without lat/long
+            continue
         for flow in site["flows"]:
             entry = flow
             if "begin" in entry:
@@ -111,10 +124,6 @@ def process_flows_metadata(sites):
 
 def process_raw_data(raw_data):
     output = []
-    # Define a namespace (required for UUIDv5)
-    # You can use standard pre-defined namespaces like NAMESPACE_DNS or NAMESPACE_URL
-
-
     for record in raw_data:
         # if nothing was recorded for the time period, just skip it
         if not record["data"]:
@@ -126,6 +135,7 @@ def process_raw_data(raw_data):
             record_identifier = f"{flow_metadata["flowID"]};{str(count["timestamp"])}"
             generated_uuid = uuid.uuid5(uuid.NAMESPACE_DNS, record_identifier)
             count["record_id"] = str(generated_uuid)
+            count["timestamp_utc"] = count["timestamp"]
             count["timestamp"] = to_floating_timestamp(count["timestamp"])
             count.update(flow_metadata)
             output.append(count)
