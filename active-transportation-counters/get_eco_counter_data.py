@@ -75,13 +75,7 @@ def get_counter_metadata():
         if not records or len(records) < page_size:
             break
 
-    return sites
-
-def process_flows_metadata(sites):
-    # Fields from the site metadata that we want to include with the flow
-    included_site_metadata = ["id", "name", "firstData", "lastData", 'granularity', "directional"]
-
-    output = []
+    filtered_sites = []
     for site in sites:
         # Ignoring temporary and transformed data counters
         is_temporary = False
@@ -92,9 +86,16 @@ def process_flows_metadata(sites):
             if tag["name"] == "Transformed Data f(x)" or tag["id"] == 7327:
                 is_temporary = True
                 break
-        if is_temporary:
-            continue
+        if not is_temporary:
+            filtered_sites.append(site)
+    return filtered_sites
 
+def process_flows_metadata(sites):
+    # Fields from the site metadata that we want to include with the flow
+    included_site_metadata = ["id", "name", "firstData", "lastData", 'granularity', "directional"]
+
+    output = []
+    for site in sites:
         # Adding site_ prefix to clarify these are describing the site
         site_metadata = {}
         for field in included_site_metadata:
