@@ -130,7 +130,7 @@ def process_raw_data(raw_data):
         if not record["data"]:
             continue
         # gathering metadata about where the data is from
-        flow_metadata = {k: v for k, v in record.items() if k != 'data'}
+        flow_metadata = {k: v for k, v in record.items() if k not in ('data', 'flowName')}
         for count in record["data"]:
             # Create a unique ID for each record
             record_identifier = f"{flow_metadata["flowID"]};{str(count["timestamp"])}"
