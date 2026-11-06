@@ -72,6 +72,7 @@ def get_counter_metadata():
         response.raise_for_status()
         records = response.json()
         sites += records
+        page += 1
         if not records or len(records) < page_size:
             break
 
